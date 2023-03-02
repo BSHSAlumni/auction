@@ -1,5 +1,6 @@
 package com.bshsalumni.auction;
 
+import com.bshsalumni.auction.common.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -17,7 +18,6 @@ public class AuctionApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) {
-		log.info("Auction application version {} started successfully", 1.0);
-		log.warn("IMAGE URL TO BE ADDED FOR PLAYERS");
+		log.info("Auction application version {} started successfully", Constants.VERSION);
 	}
 }
