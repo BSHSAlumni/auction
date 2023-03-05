@@ -25,7 +25,7 @@ public class PlayerData {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "data_id", nullable = false)
+    @Column(name = "data__id", nullable = false)
     private Integer dataId;
 
     @Column(name = "image", nullable = false)
