@@ -3,4 +3,8 @@
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
+    <include file="db/changelog/changeSet-PlayersData.xml"/>
+    <include file="db/changelog/changeSet-Teams.xml"/>
+    <include file="db/changelog/changeSet-TeamsVsPlayersMap.xml"/>
+    <include file="db/changelog/changeSet-BiddingHistory.xml"/>
 </databaseChangeLog>
