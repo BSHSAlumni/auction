@@ -34,6 +34,6 @@ public class PlayerData {
     @Column(name = "is_sold", nullable = false)
     private Boolean isSold;
 
-    @Column(name = "price", nullable = false)
+    @Column(name = "at_price", nullable = false)
     private Integer price;
 }

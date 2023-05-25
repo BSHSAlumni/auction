@@ -23,13 +23,13 @@ public class Team {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", nullable = true)
     private String name;
 
-    @Column(name = "logo", nullable = false)
+    @Column(name = "logo", nullable = true)
     private String logo;
 
-    @Column(name = "captain_id", nullable = false)
+    @Column(name = "captain_id", nullable = true)
     private Integer captainId;
 
     @Column(name = "wallet_remaining", nullable = false)

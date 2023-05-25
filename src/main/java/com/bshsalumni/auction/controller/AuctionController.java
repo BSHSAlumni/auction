@@ -8,14 +8,15 @@ package com.bshsalumni.auction.controller;
  */
 
 import com.bshsalumni.auction.common.RestMappingConstants;
+import com.bshsalumni.auction.pojo.AuctionedPlayerPojo;
+import com.bshsalumni.auction.pojo.TeamPojo;
 import com.bshsalumni.auction.service.AuctionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping(value = RestMappingConstants.AUCTION_BASE_MAPPING)
@@ -25,8 +26,8 @@ public class AuctionController {
     private AuctionService auctionService;
 
     @GetMapping(value = RestMappingConstants.INIT_AUCTION)
-    public ResponseEntity<Object> initAuction() {
-        return new ResponseEntity<>(auctionService.getSetMetaData(), HttpStatus.OK);
+    public ResponseEntity<Object> initAuction(@RequestBody List<TeamPojo> listOfTeams) {
+        return new ResponseEntity<>(auctionService.initAuction(listOfTeams), HttpStatus.OK);
     }
 
     @GetMapping(value = RestMappingConstants.GET_SET)
@@ -34,9 +35,15 @@ public class AuctionController {
         return new ResponseEntity<>(auctionService.getSet(), HttpStatus.OK);
     }
 
+    @GetMapping(value = RestMappingConstants.GET_TEAM)
+    public ResponseEntity<Object> getTeam(@RequestParam(name = "teamId") int teamId) {
+        return new ResponseEntity<>(auctionService.getTeam(teamId), HttpStatus.OK);
+    }
+
+
     @PostMapping(value = RestMappingConstants.SELL_PLAYER)
-    public ResponseEntity<Object> sellPlayer() {
-        return new ResponseEntity<>(auctionService.getSetMetaData(), HttpStatus.OK);
+    public ResponseEntity<Object> sellPlayer(@RequestBody AuctionedPlayerPojo auctionedPlayerPojo) {
+        return new ResponseEntity<>(auctionService.sellPlayer(auctionedPlayerPojo), HttpStatus.OK);
     }
 
     @GetMapping(value = RestMappingConstants.END_AUCTION)
