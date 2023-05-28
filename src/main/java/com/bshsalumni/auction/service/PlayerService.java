@@ -30,7 +30,7 @@ public class PlayerService {
     public List<PlayerDataPojo> getPlayers(List<Integer> playerIds) {
         List<PlayerData> playerData = playerDataRepo.findAllById(playerIds);
 
-        log.info("{}",playerData);
+        log.info("{}", playerData);
         return playerData.stream().map(model -> converter.modelToPojo(model)).collect(Collectors.toList());
     }
 
@@ -55,7 +55,10 @@ public class PlayerService {
                 playerData.setName(innerNode.get("name").asText());
                 playerData.setPrice(innerNode.get("base").asInt());
                 playerData.setIsSold(false);
-                playerData.setImage("");
+                if (innerNode.has("image"))
+                    playerData.setImage(innerNode.get("image").asText());
+                else
+                    playerData.setImage("https://drive.google.com/file/d/1uKrHs5Hy0kwgv0OdtsO8LrtF9rYBpjyZ/view?usp=sharing");
 
                 playerDataRepo.save(playerData);
             }
