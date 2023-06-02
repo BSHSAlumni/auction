@@ -54,6 +54,8 @@ public class PlayerService {
                 playerData.setDataId(dataId);
                 playerData.setName(innerNode.get("name").asText());
                 playerData.setPrice(innerNode.get("base").asInt());
+                playerData.setPrice(innerNode.get("base").asInt());
+                playerData.setEmail(innerNode.get("email").asText());
                 playerData.setIsSold(false);
                 if (innerNode.has("image"))
                     playerData.setImage(innerNode.get("image").asText());
@@ -75,13 +77,16 @@ public class PlayerService {
         return bodyNew;
     }
 
-    public int sellPlayer(Integer playerId, Integer price) {
+    public PlayerDataPojo sellPlayer(Integer playerId, Integer price) {
         PlayerData playerData = playerDataRepo.findByDataId(playerId).orElseThrow();
+
+        if (playerData.getIsSold())
+            return null;
 
         playerData.setPrice(price);
         playerData.setIsSold(true);
 
-        return playerDataRepo.save(playerData).getId();
+        return converter.modelToPojo(playerDataRepo.save(playerData));
     }
 
     public void init() {

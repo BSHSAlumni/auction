@@ -10,9 +10,6 @@ package com.bshsalumni.auction.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Configuration
 public class CustomConfig {
 
@@ -21,6 +18,7 @@ public class CustomConfig {
     private Boolean isFresh;
     @Value("${custom-config.total-wallet}")
     private Integer totalWallet;
+    @Value("${spring.mail.username}") private String emailSender;
 
     public boolean isFresh() {
         return isFresh;
@@ -28,5 +26,9 @@ public class CustomConfig {
 
     public int getTotalWallet() {
         return totalWallet;
+    }
+
+    public String getEmailSender() {
+        return emailSender;
     }
 }
