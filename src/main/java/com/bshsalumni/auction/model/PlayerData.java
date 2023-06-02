@@ -36,4 +36,7 @@ public class PlayerData {
 
     @Column(name = "at_price", nullable = false)
     private Integer price;
+
+    @Column(name = "email", nullable = false)
+    private String email;
 }

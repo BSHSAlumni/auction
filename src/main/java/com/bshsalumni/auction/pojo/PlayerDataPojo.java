@@ -22,5 +22,6 @@ public class PlayerDataPojo {
     private String image;
     private Boolean isSold;
     private Integer price;
+    private String email;
 
 }

@@ -7,6 +7,8 @@ package com.bshsalumni.auction.service;
 
  */
 
+import com.bshsalumni.auction.common.Constants;
+import com.bshsalumni.auction.config.CustomConfig;
 import com.bshsalumni.auction.converter.TeamConverter;
 import com.bshsalumni.auction.model.Team;
 import com.bshsalumni.auction.model.TeamPlayerMap;
@@ -18,10 +20,14 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
@@ -39,10 +45,15 @@ public class TeamService {
     @Autowired
     private TeamConverter converter;
 
+    @Autowired
+    private CustomConfig customConfig;
+
+    @Autowired
+    private JavaMailSender javaMailSender;
+
     public boolean init(List<TeamPojo> teamsList, int totalWallet) {
 
-        if (teamsList == null)
-            return false;
+        if (teamsList == null) return false;
 
         repo.deleteAll();
         teamPlayerMap.deleteAll();
@@ -76,8 +87,7 @@ public class TeamService {
     public ObjectNode getTeam(int teamId) {
         Optional<Team> teamOpt = repo.findById(teamId);
 
-        if (teamOpt.isEmpty())
-            return null;
+        if (teamOpt.isEmpty()) return null;
 
         List<Integer> playerIds = teamPlayerMap.findAllByTeamId(teamId).stream().map(TeamPlayerMap::getPlayerId).toList();
         log.info("{}", playerIds);
@@ -109,12 +119,15 @@ public class TeamService {
     }
 
     public void sellPlayer(Integer playerDataId, Integer teamId, Integer price) {
-        log.info("selling player {} to {} at {}",playerDataId, teamId, price);
+        log.info("selling player {} to {} at {}", playerDataId, teamId, price);
 
-        int playerId = playerService.sellPlayer(playerDataId, price);
+        PlayerDataPojo player = playerService.sellPlayer(playerDataId, price);
+
+        if (player == null)
+            return;
 
         TeamPlayerMap map = new TeamPlayerMap();
-        map.setPlayerId(playerId);
+        map.setPlayerId(player.getId());
         map.setTeamId(teamId);
 
         teamPlayerMap.save(map);
@@ -123,5 +136,30 @@ public class TeamService {
         team.setWalletRemaining(team.getWalletRemaining() - price);
 
         repo.save(team);
+
+        CompletableFuture.supplyAsync(() -> {
+            sendNotificationToNewTeamEntry(team.getName(), team.getLogo(), player.getName(), player.getEmail(), price);
+            return true;
+        });
+    }
+
+    private void sendNotificationToNewTeamEntry(String teamName, String logo, String playerName, String email, Integer price) {
+
+        log.info("Trying to send email to player...");
+
+        try{
+            SimpleMailMessage mailMessage = new SimpleMailMessage();
+
+            mailMessage.setFrom(customConfig.getEmailSender());
+            mailMessage.setTo(email);
+            mailMessage.setText(MessageFormat.format(Constants.NEW_TEAM_MESSAGE,playerName, price, teamName));
+            mailMessage.setSubject(MessageFormat.format(Constants.NEW_TEAM_SUBJECT, teamName));
+
+            javaMailSender.send(mailMessage);
+
+            log.info("Mail sent successfully...");
+        } catch (Exception e) {
+            log.info("Could not send mail to player {} as {}", playerName, e.getMessage());
+        }
     }
 }
