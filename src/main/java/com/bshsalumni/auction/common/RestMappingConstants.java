@@ -8,4 +8,5 @@ public class RestMappingConstants {
     public static final String GET_TEAM = "/getTeam";
     public static final String SELL_PLAYER = "/sellPlayer";
     public static final String END_AUCTION = "/endAuction";
+    public static final String GET_ALL_TEAMS = "/getAllTeams";
 }

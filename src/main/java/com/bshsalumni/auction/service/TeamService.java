@@ -78,6 +78,7 @@ public class TeamService {
             teamData.put("logo", pojo.getLogo());
             teamData.put("captainId", pojo.getCaptainId());
             teamData.put("wallet", pojo.getWalletRemaining());
+            teamData.put("playersInTeam", teamPlayerMap.countByTeamId(pojo.getId()));
 
             data.set("team_" + (count++), teamData);
         }

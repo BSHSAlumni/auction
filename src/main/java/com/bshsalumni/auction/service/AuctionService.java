@@ -143,4 +143,8 @@ public class AuctionService {
         }
         return true;
     }
+
+    public Object getAllTeams() {
+        return teamService.getTeamsData();
+    }
 }

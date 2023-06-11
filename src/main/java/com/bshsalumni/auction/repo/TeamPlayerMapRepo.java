@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface TeamPlayerMapRepo extends JpaRepository<TeamPlayerMap, Integer> {
     List<TeamPlayerMap> findAllByTeamId(int teamId);
+
+    int countByTeamId(Integer teamId);
 }

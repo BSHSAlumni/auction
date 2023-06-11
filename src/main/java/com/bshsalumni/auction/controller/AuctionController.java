@@ -40,6 +40,10 @@ public class AuctionController {
         return new ResponseEntity<>(auctionService.getTeam(teamId), HttpStatus.OK);
     }
 
+    @GetMapping(value = RestMappingConstants.GET_ALL_TEAMS)
+    public ResponseEntity<Object> getAllTeam() {
+        return new ResponseEntity<>(auctionService.getAllTeams(), HttpStatus.OK);
+    }
 
     @PostMapping(value = RestMappingConstants.SELL_PLAYER)
     public ResponseEntity<Object> sellPlayer(@RequestBody AuctionedPlayerPojo auctionedPlayerPojo) {
