@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
+    <changeSet author="swastik.dash1@gmail.com" id="1">
+        <addColumn tableName="team_player_set">
+            <column name="ordered" type="INTEGER" defaultValue="1"/>
+        </addColumn>
+    </changeSet>
+    <changeSet author="swastik.dash1@gmail.com" id="2">
+        <renameTable  newTableName="temp_player_set" oldTableName="team_player_set"
+                      schemaName="bshsalumni"/>
+    </changeSet>
+</databaseChangeLog>

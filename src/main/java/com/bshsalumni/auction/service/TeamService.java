@@ -16,6 +16,7 @@ import com.bshsalumni.auction.pojo.PlayerDataPojo;
 import com.bshsalumni.auction.pojo.TeamPojo;
 import com.bshsalumni.auction.repo.TeamPlayerMapRepo;
 import com.bshsalumni.auction.repo.TeamRepo;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -69,6 +71,9 @@ public class TeamService {
     public ObjectNode getTeamsData() {
         ObjectNode data = JsonNodeFactory.instance.objectNode();
         int count = 1;
+
+        log.info("Total teams found : {}", repo.count());
+
         for (Team team : repo.findAll()) {
             ObjectNode teamData = JsonNodeFactory.instance.objectNode();
 
@@ -91,13 +96,13 @@ public class TeamService {
         if (teamOpt.isEmpty()) return null;
 
         List<Integer> playerIds = teamPlayerMap.findAllByTeamId(teamId).stream().map(TeamPlayerMap::getPlayerId).toList();
-        log.info("{}", playerIds);
+        log.info("player ids for the team {} are {}", teamId, playerIds);
         List<PlayerDataPojo> players = playerService.getPlayers(playerIds);
 
 
         ObjectNode data = JsonNodeFactory.instance.objectNode();
         ObjectNode teamData = JsonNodeFactory.instance.objectNode();
-        ObjectNode playersData = JsonNodeFactory.instance.objectNode();
+        ArrayNode playersData = JsonNodeFactory.instance.arrayNode();
 
         TeamPojo pojo = converter.modelToPojo(teamOpt.get());
         teamData.put("Name", pojo.getName());
@@ -107,13 +112,16 @@ public class TeamService {
         teamData.put("players", playerIds.size());
 
         data.set("team", teamData);
-
+        List<ObjectNode> playerObjectNode = new ArrayList<>();
         players.forEach(playerDataPojo -> {
-            playersData.put("name", playerDataPojo.getName());
-            playersData.put("image", playerDataPojo.getImage());
-            playersData.put("price", playerDataPojo.getPrice());
+            ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
+            objectNode.put("name", playerDataPojo.getName());
+            objectNode.put("image", playerDataPojo.getImage());
+            objectNode.put("price", playerDataPojo.getPrice());
+            playerObjectNode.add(objectNode);
         });
 
+        playersData.addAll(playerObjectNode);
         data.set("players", playersData);
 
         return data;
@@ -138,22 +146,22 @@ public class TeamService {
 
         repo.save(team);
 
-        CompletableFuture.supplyAsync(() -> {
-            sendNotificationToNewTeamEntry(team.getName(), team.getLogo(), player.getName(), player.getEmail(), price);
-            return true;
-        });
+//        CompletableFuture.supplyAsync(() -> {
+//            sendNotificationToNewTeamEntry(team.getName(), team.getLogo(), player.getName(), player.getEmail(), price);
+//            return true;
+//        });
     }
 
     private void sendNotificationToNewTeamEntry(String teamName, String logo, String playerName, String email, Integer price) {
 
         log.info("Trying to send email to player...");
 
-        try{
+        try {
             SimpleMailMessage mailMessage = new SimpleMailMessage();
 
             mailMessage.setFrom(customConfig.getEmailSender());
             mailMessage.setTo(email);
-            mailMessage.setText(MessageFormat.format(Constants.NEW_TEAM_MESSAGE,playerName, price, teamName));
+            mailMessage.setText(MessageFormat.format(Constants.NEW_TEAM_MESSAGE, playerName, price, teamName));
             mailMessage.setSubject(MessageFormat.format(Constants.NEW_TEAM_SUBJECT, teamName));
 
             javaMailSender.send(mailMessage);

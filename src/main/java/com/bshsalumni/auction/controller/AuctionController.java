@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RestController
 @RequestMapping(value = RestMappingConstants.AUCTION_BASE_MAPPING)
 public class AuctionController {
@@ -26,13 +27,21 @@ public class AuctionController {
     private AuctionService auctionService;
 
     @GetMapping(value = RestMappingConstants.INIT_AUCTION)
-    public ResponseEntity<Object> initAuction(@RequestBody List<TeamPojo> listOfTeams) {
-        return new ResponseEntity<>(auctionService.initAuction(listOfTeams), HttpStatus.OK);
+    public ResponseEntity<Object> initAuction() {
+        return new ResponseEntity<>(auctionService.initAuction(), HttpStatus.OK);
     }
 
-    @GetMapping(value = RestMappingConstants.GET_SET)
-    public ResponseEntity<Object> getSet() {
-        return new ResponseEntity<>(auctionService.getSet(), HttpStatus.OK);
+    @GetMapping(value = RestMappingConstants.GET_NEXT_SET)
+    public ResponseEntity<Object> getNextSet() {
+        return new ResponseEntity<>(auctionService.getNextSet(), HttpStatus.OK);
+    }
+
+    @GetMapping(value = RestMappingConstants.GET_NEXT_PLAYER)
+    public ResponseEntity<Object> getNextPlayer() {
+        Object res = auctionService.getNextPlayer();
+        if (res != null)
+            return new ResponseEntity<>(auctionService.getNextPlayer(), HttpStatus.OK);
+        else return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping(value = RestMappingConstants.GET_TEAM)
@@ -48,10 +57,5 @@ public class AuctionController {
     @PostMapping(value = RestMappingConstants.SELL_PLAYER)
     public ResponseEntity<Object> sellPlayer(@RequestBody AuctionedPlayerPojo auctionedPlayerPojo) {
         return new ResponseEntity<>(auctionService.sellPlayer(auctionedPlayerPojo), HttpStatus.OK);
-    }
-
-    @GetMapping(value = RestMappingConstants.END_AUCTION)
-    public ResponseEntity<Object> endAuction() {
-        return new ResponseEntity<>(auctionService.getSetMetaData(), HttpStatus.OK);
     }
 }

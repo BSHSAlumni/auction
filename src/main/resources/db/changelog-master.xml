@@ -8,4 +8,6 @@
     <include file="db/changelog/changeSet-TeamsVsPlayersMap.xml"/>
     <include file="db/changelog/changeSet-BiddingHistory.xml"/>
     <include file="db/changelog/changeSet-PlayerEmail.xml"/>
+    <include file="db/changelog/changeSet-tempSet.xml"/>
+    <include file="db/changelog/changeSet-randomizeTempAndRenameTable.xml"/>
 </databaseChangeLog>

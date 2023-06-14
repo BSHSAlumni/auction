@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
+    <changeSet author="Swastik" id="swastik.dash1@gmail.com">
+        <createTable tableName="team_player_set">
+            <column name="id" type="INTEGER">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="phone_number" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="pass_out_year" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="batting_type" type="VARCHAR(100)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="batting_hand" type="VARCHAR(100)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="bowling_type" type="VARCHAR(100)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="bowling_hand" type="VARCHAR(100)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="is_wicket_keeper" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="base" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="image" type="VARCHAR(300)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

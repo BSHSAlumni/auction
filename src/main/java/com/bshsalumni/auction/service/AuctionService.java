@@ -13,9 +13,7 @@ import com.bshsalumni.auction.converter.AuctionConverter;
 import com.bshsalumni.auction.model.BiddingHistory;
 import com.bshsalumni.auction.pojo.AuctionedPlayerPojo;
 import com.bshsalumni.auction.pojo.SetMetaData;
-import com.bshsalumni.auction.pojo.TeamPojo;
 import com.bshsalumni.auction.repo.BiddingHistoryRepo;
-import com.bshsalumni.auction.repo.PlayerDataRepo;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -27,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -35,13 +34,13 @@ import java.util.List;
 public class AuctionService {
 
     @Autowired
-    private BiddingHistoryRepo biddingHistoryRepo;
-
-    @Autowired
     private TeamService teamService;
 
     @Autowired
     private PlayerService playerService;
+
+    @Autowired
+    private BiddingHistoryRepo biddingHistoryRepo;
 
     @Autowired
     private AuctionConverter auctionConverter;
@@ -49,14 +48,15 @@ public class AuctionService {
     @Autowired
     private CustomConfig customConfig;
 
-    private List<SetMetaData> metaDataList;
+    @Autowired
+    private TempDbService tempDbService;
 
-    public JsonNode initAuction(List<TeamPojo> teamsList) {
-        if (customConfig.isFresh()) {
-            log.info("Setting up teams...");
-            teamService.init(teamsList, customConfig.getTotalWallet());
-            playerService.init();
-        }
+    private List<SetMetaData> sets = null;
+
+    public ObjectNode initAuction() {
+
+        if (sets != null && sets.size() != 0)
+            return JsonNodeFactory.instance.objectNode().put("error", "Auction already started...");
 
         log.info("Fetching teams data...");
         ObjectNode teamsData = teamService.getTeamsData();
@@ -71,68 +71,45 @@ public class AuctionService {
         return data;
     }
 
-    public JsonNode getSetMetaData() {
+    public ObjectNode getNextSet() {
 
-        metaDataList = new ArrayList<>();
+        if (sets.size() == 0) return JsonNodeFactory.instance.objectNode().put("error", "No more sets to view..");
 
-        HashMap<String, Long> params = new HashMap<>();
-        try {
-            String url = Constants.PLAYER_SERVICE_BASE_URL + Constants.PLAYER_SERVICE_SET_BASE_URL + Constants.PLAYER_SERVICE_SET_METADATA_URL;
-            log.info("Request sent to {}", url);
-            ResponseEntity<JsonNode> response = new RestTemplate().getForEntity(url, JsonNode.class, params);
+        if (tempDbService.hasPlayersRemainingInPreviousSet())
+            return JsonNodeFactory.instance.objectNode().put("error", "Players pending from previous set..");
 
-            log.info("Response received : {}", response.getBody());
+        SetMetaData metaData = sets.remove(0);
 
-            metaDataList = auctionConverter.jsonNodeToSetMetaDataPojo(response.getBody());
-
-            return response.getBody();
-        } catch (Exception ex) {
-            log.error("Failed to receive valid response : {}", ex.getMessage());
-        }
-
-        return null;
+        return getSetAndWriteToDb(metaData);
     }
 
-    public JsonNode getSet() {
+    public ObjectNode getNextPlayer() {
+        ObjectNode playerToBeAuctioned = tempDbService.nextPlayerFromDb();
 
-        if (metaDataList.size() < 0) return null;
+        if (playerToBeAuctioned == null)
+            return JsonNodeFactory.instance.objectNode().put("error", "No more players in this set..");
 
-        HashMap<String, String> params = new HashMap<>();
+        playerToBeAuctioned.put("remaining", tempDbService.remainingPlayersInSet());
 
-
-        try {
-            String url = String.format("%s%s%s?%s=%s&%s=%s", Constants.PLAYER_SERVICE_BASE_URL, Constants.PLAYER_SERVICE_SET_BASE_URL, Constants.PLAYER_SERVICE_SET_DETAILS_URL, "type", metaDataList.get(0).getType(), "priority", metaDataList.get(0).getPriority());
-            log.info("Request sent to {}", url);
-            ResponseEntity<JsonNode> response = new RestTemplate().getForEntity(url, JsonNode.class, params);
-            JsonNode body = response.getBody();
-
-            if (body != null)
-                body = playerService.checkAndSavePlayers(body);
-
-            log.info("Response received (after filtering old values): {}", body);
-            metaDataList.remove(0);
-
-            return body;
-        } catch (Exception ex) {
-            log.error("Failed to receive valid response -> {}", ex.getMessage());
-        }
-
-        return null;
+        return playerToBeAuctioned;
     }
 
-    public Object getTeam(int teamId) {
+    public ObjectNode getTeam(int teamId) {
         return teamService.getTeam(teamId);
     }
 
-    public boolean sellPlayer(AuctionedPlayerPojo auctionedPlayerPojo) {
+    public ObjectNode getAllTeams() {
+        return teamService.getTeamsData();
+    }
 
+    public ObjectNode sellPlayer(AuctionedPlayerPojo auctionedPlayerPojo) {
         if (auctionedPlayerPojo.getIsSold()) {
             teamService.sellPlayer(auctionedPlayerPojo.getPlayerId(), auctionedPlayerPojo.getTeamId(), auctionedPlayerPojo.getPrice());
 
             auctionedPlayerPojo.getBiddingHistory().forEach(bidPojo -> {
 
                 BiddingHistory bidModel = new BiddingHistory();
-                bidModel.setPlayerId(bidPojo.getPlayerId());
+                bidModel.setPlayerId(auctionedPlayerPojo.getPlayerId());
                 bidModel.setTeamId(bidPojo.getTeamId());
                 bidModel.setBidAt(bidPojo.getBidAt());
                 bidModel.setIsWinningBid(bidPojo.getIsWinningBid());
@@ -141,10 +118,51 @@ public class AuctionService {
 
             });
         }
-        return true;
+        tempDbService.deletePlayer(auctionedPlayerPojo.getPlayerId());
+        return getAllTeams();
     }
 
-    public Object getAllTeams() {
-        return teamService.getTeamsData();
+    private ArrayNode getSetMetaData() {
+        sets = new ArrayList<>();
+
+        try {
+            HashMap<String, Long> params = new HashMap<>();
+            String url = Constants.PLAYER_SERVICE_BASE_URL + Constants.PLAYER_SERVICE_SET_BASE_URL + Constants.PLAYER_SERVICE_SET_METADATA_URL;
+
+            log.info("Request sent to {}", url);
+            ResponseEntity<JsonNode> response = new RestTemplate().getForEntity(url, JsonNode.class, params);
+            log.info("Response received : {}", response.getBody());
+
+            sets = auctionConverter.jsonNodeToSetMetaDataPojo(response.getBody());
+
+            Collections.shuffle(sets);
+
+            if (response.hasBody() && response.getBody() != null) return response.getBody().deepCopy();
+        } catch (Exception ex) {
+            log.error("Failed to receive valid response : {}", ex.getMessage());
+        }
+        return JsonNodeFactory.instance.arrayNode();
+    }
+
+    private ObjectNode getSetAndWriteToDb(SetMetaData set) {
+        try {
+
+            String url = String.format("%s%s%s?%s=%s&%s=%s", Constants.PLAYER_SERVICE_BASE_URL, Constants.PLAYER_SERVICE_SET_BASE_URL, Constants.PLAYER_SERVICE_SET_DETAILS_URL, "type", set.getType(), "priority", set.getPriority());
+            log.info("Request sent to {}", url);
+            ResponseEntity<JsonNode> response = new RestTemplate().getForEntity(url, JsonNode.class, new HashMap<>());
+            JsonNode body = response.getBody();
+
+            if (body == null)
+                throw new RuntimeException();
+
+            body = playerService.checkAndSavePlayers(body);
+
+            tempDbService.writeSet(body);
+
+            return body.deepCopy();
+        } catch (Exception ex) {
+            log.error("Failed to receive valid response -> {}", ex.getMessage());
+        }
+        return JsonNodeFactory.instance.objectNode();
     }
 }

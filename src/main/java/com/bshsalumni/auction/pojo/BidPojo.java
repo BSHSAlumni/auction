@@ -18,7 +18,6 @@ public class BidPojo {
 
     private Integer id;
     private Integer teamId;
-    private Integer playerId;
     private Integer bidAt;
     private Boolean isWinningBid;
 
