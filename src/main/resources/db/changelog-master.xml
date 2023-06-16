@@ -11,4 +11,5 @@
     <include file="db/changelog/changeSet-tempSet.xml"/>
     <include file="db/changelog/changeSet-randomizeTempAndRenameTable.xml"/>
     <include file="db/changelog/changeSet-captainDetailsInTeam.xml"/>
+    <include file="db/changelog/changeSet-playerCategory.xml"/>
 </databaseChangeLog>

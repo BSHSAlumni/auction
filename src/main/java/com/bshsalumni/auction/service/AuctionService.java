@@ -85,6 +85,7 @@ public class AuctionService {
 
     public ObjectNode getNextPlayer() {
         ObjectNode playerToBeAuctioned = tempDbService.nextPlayerFromDb();
+        playerToBeAuctioned.put("category", playerService.getPlayers(Collections.singletonList(playerToBeAuctioned.get("id").asInt())).get(0).getCategory());
 
         if (playerToBeAuctioned == null)
             return JsonNodeFactory.instance.objectNode().put("error", "No more players in this set..");
@@ -155,7 +156,7 @@ public class AuctionService {
             if (body == null)
                 throw new RuntimeException();
 
-            body = playerService.checkAndSavePlayers(body);
+            body = playerService.checkAndSavePlayers(body, set.getType().substring(0,set.getType().indexOf("(")));
 
             tempDbService.writeSet(body);
 

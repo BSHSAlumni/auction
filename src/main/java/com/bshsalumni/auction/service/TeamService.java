@@ -113,6 +113,7 @@ public class TeamService {
             objectNode.put("name", playerDataPojo.getName());
             objectNode.put("image", playerDataPojo.getImage());
             objectNode.put("price", playerDataPojo.getPrice());
+            objectNode.put("category", playerDataPojo.getCategory());
             playerObjectNode.add(objectNode);
         });
 

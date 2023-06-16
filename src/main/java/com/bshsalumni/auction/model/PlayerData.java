@@ -9,6 +9,7 @@ package com.bshsalumni.auction.model;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.*;
 
@@ -16,10 +17,10 @@ import javax.persistence.*;
 @Setter
 @Entity
 @Table(name = "player_data")
+@ToString
 public class PlayerData {
     @Id
     @Column(name = "id", nullable = false)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column(name = "name", nullable = false)
@@ -39,4 +40,7 @@ public class PlayerData {
 
     @Column(name = "email", nullable = false)
     private String email;
+
+    @Column(name = "category", nullable = false)
+    private String category;
 }

@@ -33,7 +33,8 @@ public class PlayerService {
         return playerData.stream().map(model -> converter.modelToPojo(model)).collect(Collectors.toList());
     }
 
-    public JsonNode checkAndSavePlayers(JsonNode body) {
+    public JsonNode checkAndSavePlayers(JsonNode body, String type) {
+        type = type.trim();
         ArrayNode players = body.get("players").deepCopy();
         ObjectNode metaData = body.get("metadata").deepCopy();
         ArrayNode newPlayers = JsonNodeFactory.instance.arrayNode();
@@ -50,11 +51,13 @@ public class PlayerService {
                     continue;
             } else {
                 PlayerData playerData = new PlayerData();
+                playerData.setId(dataId);
                 playerData.setDataId(dataId);
                 playerData.setName(innerNode.get("name").asText());
                 playerData.setPrice(innerNode.get("base").asInt());
                 playerData.setPrice(innerNode.get("base").asInt());
                 playerData.setEmail(innerNode.get("email").asText());
+                playerData.setCategory(type);
                 playerData.setIsSold(false);
                 if (innerNode.has("image"))
                     playerData.setImage(innerNode.get("image").asText());
@@ -62,6 +65,7 @@ public class PlayerService {
                     playerData.setImage("https://drive.google.com/file/d/1uKrHs5Hy0kwgv0OdtsO8LrtF9rYBpjyZ/view?usp=sharing");
 
                 playerDataRepo.save(playerData);
+                innerNode.put("category", type);
             }
 
 

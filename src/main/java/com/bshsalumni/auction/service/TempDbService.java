@@ -51,6 +51,7 @@ public class TempDbService {
         node.put("isWicketKeeper", setPlayer.getIsWicketKeeper());
         node.put("base", setPlayer.getBase());
         node.put("image", setPlayer.getImage());
+        node.put("image", setPlayer.getImage());
 
         return node;
     }
