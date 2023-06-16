@@ -53,7 +53,7 @@ public class AuctionServiceBackup {
     public JsonNode initAuction(List<TeamPojo> teamsList) {
         if (customConfig.isFresh()) {
             log.info("Setting up teams...");
-            teamService.init(teamsList, customConfig.getTotalWallet());
+            teamService.init();
             playerService.init();
         }
 

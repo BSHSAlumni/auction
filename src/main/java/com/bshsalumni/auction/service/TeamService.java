@@ -53,19 +53,9 @@ public class TeamService {
     @Autowired
     private JavaMailSender javaMailSender;
 
-    public boolean init(List<TeamPojo> teamsList, int totalWallet) {
-
-        if (teamsList == null) return false;
-
-        repo.deleteAll();
+    public void init() {
+//        repo.deleteAll();
         teamPlayerMap.deleteAll();
-
-        for (TeamPojo team : teamsList) {
-            team.setWalletRemaining(totalWallet);
-            repo.save(converter.pojoToModel(team));
-        }
-
-        return true;
     }
 
     public ObjectNode getTeamsData() {
@@ -102,16 +92,21 @@ public class TeamService {
 
         ObjectNode data = JsonNodeFactory.instance.objectNode();
         ObjectNode teamData = JsonNodeFactory.instance.objectNode();
+        ObjectNode captainData = JsonNodeFactory.instance.objectNode();
         ArrayNode playersData = JsonNodeFactory.instance.arrayNode();
 
         TeamPojo pojo = converter.modelToPojo(teamOpt.get());
         teamData.put("Name", pojo.getName());
         teamData.put("logo", pojo.getLogo());
-        teamData.put("captainId", pojo.getCaptainId());
         teamData.put("wallet", pojo.getWalletRemaining());
         teamData.put("players", playerIds.size());
-
         data.set("team", teamData);
+
+        captainData.put("captainName", pojo.getCaptainName());
+        captainData.put("captainPassOutYear", pojo.getCaptainPassOutYear());
+        captainData.put("captainImage", pojo.getCaptainImage());
+        data.set("captain", captainData);
+
         List<ObjectNode> playerObjectNode = new ArrayList<>();
         players.forEach(playerDataPojo -> {
             ObjectNode objectNode = JsonNodeFactory.instance.objectNode();

@@ -165,4 +165,11 @@ public class AuctionService {
         }
         return JsonNodeFactory.instance.objectNode();
     }
+
+    public void deleteEverything() {
+        sets = null;
+        teamService.init();
+        playerService.init();
+        tempDbService.init();
+    }
 }

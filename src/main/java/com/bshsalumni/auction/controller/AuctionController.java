@@ -58,4 +58,10 @@ public class AuctionController {
     public ResponseEntity<Object> sellPlayer(@RequestBody AuctionedPlayerPojo auctionedPlayerPojo) {
         return new ResponseEntity<>(auctionService.sellPlayer(auctionedPlayerPojo), HttpStatus.OK);
     }
+
+    @GetMapping(value = "/delete")
+    public ResponseEntity<Object> deleteEveryThing(){
+        auctionService.deleteEverything();
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

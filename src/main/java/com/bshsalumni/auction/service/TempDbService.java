@@ -99,4 +99,8 @@ public class TempDbService {
     public void deletePlayer(Integer playerId) {
         repo.deleteById(playerId);
     }
+
+    public void init() {
+        repo.deleteAll();
+    }
 }
