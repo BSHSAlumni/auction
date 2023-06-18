@@ -29,7 +29,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Service
@@ -74,6 +74,11 @@ public class TeamService {
             teamData.put("captainId", pojo.getCaptainId());
             teamData.put("wallet", pojo.getWalletRemaining());
             teamData.put("playersInTeam", teamPlayerMap.countByTeamId(pojo.getId()));
+            ObjectNode captainData = JsonNodeFactory.instance.objectNode();
+            captainData.put("Name", pojo.getCaptainName());
+            captainData.put("passOutYear", pojo.getCaptainPassOutYear());
+            captainData.put("image", pojo.getCaptainImage());
+            teamData.set("captain", captainData);
 
             data.set("team_" + (count++), teamData);
         }
@@ -93,7 +98,7 @@ public class TeamService {
         ObjectNode data = JsonNodeFactory.instance.objectNode();
         ObjectNode teamData = JsonNodeFactory.instance.objectNode();
         ObjectNode captainData = JsonNodeFactory.instance.objectNode();
-        ArrayNode playersData = JsonNodeFactory.instance.arrayNode();
+        ObjectNode playersData = JsonNodeFactory.instance.objectNode();
 
         TeamPojo pojo = converter.modelToPojo(teamOpt.get());
         teamData.put("Name", pojo.getName());
@@ -102,22 +107,23 @@ public class TeamService {
         teamData.put("players", playerIds.size());
         data.set("team", teamData);
 
-        captainData.put("captainName", pojo.getCaptainName());
-        captainData.put("captainPassOutYear", pojo.getCaptainPassOutYear());
-        captainData.put("captainImage", pojo.getCaptainImage());
-        data.set("captain", captainData);
+        captainData.put("name", pojo.getCaptainName());
+        captainData.put("passOutYear", pojo.getCaptainPassOutYear());
+        captainData.put("image", pojo.getCaptainImage());
+        teamData.set("captain", captainData);
 
         List<ObjectNode> playerObjectNode = new ArrayList<>();
+        AtomicInteger c = new AtomicInteger();
+        c.set(1);
         players.forEach(playerDataPojo -> {
-            ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
-            objectNode.put("name", playerDataPojo.getName());
-            objectNode.put("image", playerDataPojo.getImage());
-            objectNode.put("price", playerDataPojo.getPrice());
-            objectNode.put("category", playerDataPojo.getCategory());
-            playerObjectNode.add(objectNode);
+            ObjectNode player = JsonNodeFactory.instance.objectNode();
+            player.put("name", playerDataPojo.getName());
+            player.put("image", playerDataPojo.getImage());
+            player.put("price", playerDataPojo.getPrice());
+            player.put("category", playerDataPojo.getCategory());
+            playersData.set("player_"+c.getAndIncrement(),player);
         });
 
-        playersData.addAll(playerObjectNode);
         data.set("players", playersData);
 
         return data;

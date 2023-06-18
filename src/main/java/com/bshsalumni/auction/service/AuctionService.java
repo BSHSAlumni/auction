@@ -73,6 +73,8 @@ public class AuctionService {
 
     public ObjectNode getNextSet() {
 
+        if (sets == null) return JsonNodeFactory.instance.objectNode().put("error", "Sets not initialized..");
+
         if (sets.size() == 0) return JsonNodeFactory.instance.objectNode().put("error", "No more sets to view..");
 
         if (tempDbService.hasPlayersRemainingInPreviousSet())
@@ -85,10 +87,10 @@ public class AuctionService {
 
     public ObjectNode getNextPlayer() {
         ObjectNode playerToBeAuctioned = tempDbService.nextPlayerFromDb();
-        playerToBeAuctioned.put("category", playerService.getPlayers(Collections.singletonList(playerToBeAuctioned.get("id").asInt())).get(0).getCategory());
-
         if (playerToBeAuctioned == null)
             return JsonNodeFactory.instance.objectNode().put("error", "No more players in this set..");
+
+        playerToBeAuctioned.put("category", playerService.getPlayers(Collections.singletonList(playerToBeAuctioned.get("id").asInt())).get(0).getCategory());
 
         playerToBeAuctioned.put("remaining", tempDbService.remainingPlayersInSet());
 
@@ -156,7 +158,7 @@ public class AuctionService {
             if (body == null)
                 throw new RuntimeException();
 
-            body = playerService.checkAndSavePlayers(body, set.getType().substring(0,set.getType().indexOf("(")));
+            body = playerService.checkAndSavePlayers(body, set.getType().substring(0, set.getType().indexOf("(")));
 
             tempDbService.writeSet(body);
 
