@@ -129,13 +129,13 @@ public class TeamService {
         return data;
     }
 
-    public void sellPlayer(Integer playerDataId, Integer teamId, Integer price) {
+    public boolean sellPlayer(Integer playerDataId, Integer teamId, Integer price) {
         log.info("selling player {} to {} at {}", playerDataId, teamId, price);
 
         PlayerDataPojo player = playerService.sellPlayer(playerDataId, price);
 
         if (player == null)
-            return;
+            return false;
 
         TeamPlayerMap map = new TeamPlayerMap();
         map.setPlayerId(player.getId());
@@ -152,6 +152,8 @@ public class TeamService {
 //            sendNotificationToNewTeamEntry(team.getName(), team.getLogo(), player.getName(), player.getEmail(), price);
 //            return true;
 //        });
+
+        return true;
     }
 
     private void sendNotificationToNewTeamEntry(String teamName, String logo, String playerName, String email, Integer price) {

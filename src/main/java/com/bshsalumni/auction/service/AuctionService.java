@@ -73,14 +73,16 @@ public class AuctionService {
 
     public ObjectNode getNextSet() {
 
-        if (sets == null) return JsonNodeFactory.instance.objectNode().put("error", "Sets not initialized..");
-
-        if (sets.size() == 0) return JsonNodeFactory.instance.objectNode().put("error", "No more sets to view..");
+        if (tempDbService.getSetsCount() == 0)
+            return JsonNodeFactory.instance.objectNode().put("error", "No more sets to view...");
 
         if (tempDbService.hasPlayersRemainingInPreviousSet())
             return JsonNodeFactory.instance.objectNode().put("error", "Players pending from previous set..");
 
-        SetMetaData metaData = sets.remove(0);
+        SetMetaData metaData = tempDbService.nextSet();
+
+        if (metaData == null)
+            return JsonNodeFactory.instance.objectNode().put("error", "Sets not initialized...");
 
         return getSetAndWriteToDb(metaData);
     }
@@ -107,21 +109,24 @@ public class AuctionService {
 
     public ObjectNode sellPlayer(AuctionedPlayerPojo auctionedPlayerPojo) {
         if (auctionedPlayerPojo.getIsSold()) {
-            teamService.sellPlayer(auctionedPlayerPojo.getPlayerId(), auctionedPlayerPojo.getTeamId(), auctionedPlayerPojo.getPrice());
+            boolean res = teamService.sellPlayer(auctionedPlayerPojo.getPlayerId(), auctionedPlayerPojo.getTeamId(), auctionedPlayerPojo.getPrice());
 
-            auctionedPlayerPojo.getBiddingHistory().forEach(bidPojo -> {
+            if (res) {
+                auctionedPlayerPojo.getBiddingHistory().forEach(bidPojo -> {
 
-                BiddingHistory bidModel = new BiddingHistory();
-                bidModel.setPlayerId(auctionedPlayerPojo.getPlayerId());
-                bidModel.setTeamId(bidPojo.getTeamId());
-                bidModel.setBidAt(bidPojo.getBidAt());
-                bidModel.setIsWinningBid(bidPojo.getIsWinningBid());
+                    BiddingHistory bidModel = new BiddingHistory();
+                    bidModel.setPlayerId(auctionedPlayerPojo.getPlayerId());
+                    bidModel.setTeamId(bidPojo.getTeamId());
+                    bidModel.setBidAt(bidPojo.getBidAt());
+                    bidModel.setIsWinningBid(bidPojo.getIsWinningBid());
 
-                biddingHistoryRepo.save(bidModel);
+                    biddingHistoryRepo.save(bidModel);
 
-            });
+                });
+            }
         }
         tempDbService.deletePlayer(auctionedPlayerPojo.getPlayerId());
+        tempDbService.updateSet(tempDbService.nextSet());
         return getAllTeams();
     }
 
@@ -137,6 +142,7 @@ public class AuctionService {
             log.info("Response received : {}", response.getBody());
 
             sets = auctionConverter.jsonNodeToSetMetaDataPojo(response.getBody());
+            tempDbService.saveSets(sets);
 
             Collections.shuffle(sets);
 

@@ -14,4 +14,6 @@
     <include file="db/changelog/changeSet-playerCategory.xml"/>
     <include file="db/changelog/changeSet-playerPassoutYear.xml"/>
     <include file="db/changelog/changeSet-AuctionSet.xml"/>
+    <include file="db/changelog/changeSet-priority.xml"/>
+    <include file="db/changelog/changeSet-orderNameChange.xml"/>
 </databaseChangeLog>
