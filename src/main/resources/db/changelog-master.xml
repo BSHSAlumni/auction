@@ -12,4 +12,6 @@
     <include file="db/changelog/changeSet-randomizeTempAndRenameTable.xml"/>
     <include file="db/changelog/changeSet-captainDetailsInTeam.xml"/>
     <include file="db/changelog/changeSet-playerCategory.xml"/>
+    <include file="db/changelog/changeSet-playerPassoutYear.xml"/>
+    <include file="db/changelog/changeSet-AuctionSet.xml"/>
 </databaseChangeLog>

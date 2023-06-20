@@ -57,6 +57,7 @@ public class PlayerService {
                 playerData.setPrice(innerNode.get("base").asInt());
                 playerData.setPrice(innerNode.get("base").asInt());
                 playerData.setEmail(innerNode.get("email").asText());
+                playerData.setPassOutYear(innerNode.get("passOutYear").asInt());
                 playerData.setCategory(type);
                 playerData.setIsSold(false);
                 if (innerNode.has("image"))

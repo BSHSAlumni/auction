@@ -43,4 +43,7 @@ public class PlayerData {
 
     @Column(name = "category", nullable = false)
     private String category;
+
+    @Column(name = "pass_out_year", nullable = false)
+    private Integer passOutYear;
 }
