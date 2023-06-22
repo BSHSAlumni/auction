@@ -64,4 +64,9 @@ public class AuctionController {
         auctionService.deleteEverything();
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    @GetMapping(value = "/")
+    public String dummy(){
+        return ("<HTML><script>window.location.replace(\"https://bshs-alumni-auction.web.app/\"); console.log(window.location.href)</script></HTML>");
+    }
 }

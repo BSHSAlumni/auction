@@ -51,11 +51,13 @@ public class AuctionService {
     @Autowired
     private TempDbService tempDbService;
 
-    private List<SetMetaData> sets = null;
+    private int sets = 0;
 
     public ObjectNode initAuction() {
 
-        if (sets != null && sets.size() != 0)
+        sets = tempDbService.getSetsCount();
+
+        if (sets != 0)
             return JsonNodeFactory.instance.objectNode().put("error", "Auction already started...");
 
         log.info("Fetching teams data...");
@@ -131,7 +133,6 @@ public class AuctionService {
     }
 
     private ArrayNode getSetMetaData() {
-        sets = new ArrayList<>();
 
         try {
             HashMap<String, Long> params = new HashMap<>();
@@ -141,10 +142,7 @@ public class AuctionService {
             ResponseEntity<JsonNode> response = new RestTemplate().getForEntity(url, JsonNode.class, params);
             log.info("Response received : {}", response.getBody());
 
-            sets = auctionConverter.jsonNodeToSetMetaDataPojo(response.getBody());
-            tempDbService.saveSets(sets);
-
-            Collections.shuffle(sets);
+            tempDbService.saveSets(auctionConverter.jsonNodeToSetMetaDataPojo(response.getBody()));
 
             if (response.hasBody() && response.getBody() != null) return response.getBody().deepCopy();
         } catch (Exception ex) {
@@ -166,7 +164,7 @@ public class AuctionService {
 
             body = playerService.checkAndSavePlayers(body, set.getType().substring(0, set.getType().indexOf("(")));
 
-            tempDbService.writeSet(body);
+            tempDbService.writeSet(body, set.getType());
 
             return body.deepCopy();
         } catch (Exception ex) {
@@ -176,7 +174,7 @@ public class AuctionService {
     }
 
     public void deleteEverything() {
-        sets = null;
+        sets = 0;
         teamService.init();
         playerService.init();
         tempDbService.init();

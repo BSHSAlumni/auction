@@ -65,7 +65,7 @@ public class TempDbService {
         return (int) (repo.count() - 1);
     }
 
-    public void writeSet(JsonNode body) {
+    public void writeSet(JsonNode body, String type) {
         ArrayNode nodes = body.get("players").deepCopy();
 
         List<TempSetPlayer> list = new ArrayList<>();
@@ -96,6 +96,15 @@ public class TempDbService {
             tempSetPlayer.setOrdered(c++);
             repo.save(tempSetPlayer);
         }
+        log.info(body.get("metadata").get("count").asText());
+        updateSet(type, body.get("metadata").get("count").asInt());
+    }
+
+    void updateSet(String name, int count){
+        AuctionSet set = auctionSetRepo.findBySetName(name);
+        log.info(String.valueOf(set));
+        set.setTotal(count);
+        auctionSetRepo.save(set);
     }
 
     public boolean hasPlayersRemainingInPreviousSet() {
@@ -133,6 +142,11 @@ public class TempDbService {
 
         if (set == null)
             return null;
+
+        if (Objects.equals(set.getAuctioned(), set.getTotal())) {
+            auctionSetRepo.deleteById(set.getId());
+            return nextSet();
+        }
 
         SetMetaData metaData = new SetMetaData();
         metaData.setType(set.getSetName());

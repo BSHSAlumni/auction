@@ -38,13 +38,14 @@ public class PlayerService {
         ArrayNode players = body.get("players").deepCopy();
         ObjectNode metaData = body.get("metadata").deepCopy();
         ArrayNode newPlayers = JsonNodeFactory.instance.arrayNode();
+        int c = 0;
 
         for (int i = 0; i < players.size(); i++) {
             ObjectNode innerNode = players.get(i).deepCopy();
 
             int dataId = innerNode.get("id").asInt();
 
-            Optional<PlayerData> previous = playerDataRepo.findByDataId(dataId);
+            Optional<PlayerData> previous = playerDataRepo.findById(dataId);
 
             if (previous.isPresent()) {
                 if (previous.get().getIsSold())
@@ -69,12 +70,13 @@ public class PlayerService {
                 innerNode.put("category", type);
             }
 
-
+            c++;
             newPlayers.add(innerNode);
         }
 
         metaData.put("count", newPlayers.size());
         ObjectNode bodyNew = JsonNodeFactory.instance.objectNode();
+        metaData.put("count", c);
         bodyNew.set("metadata", metaData);
         bodyNew.set("players", newPlayers);
 
