@@ -24,4 +24,5 @@ public class PlayerDataPojo {
     private Integer price;
     private String email;
     private String category;
+    private Integer passOutYear;
 }

@@ -121,6 +121,7 @@ public class TeamService {
             player.put("image", playerDataPojo.getImage());
             player.put("price", playerDataPojo.getPrice());
             player.put("category", playerDataPojo.getCategory());
+            player.put("passOutYear", playerDataPojo.getPassOutYear());
             playersData.set("player_"+c.getAndIncrement(),player);
         });
 
