@@ -29,6 +29,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
@@ -149,15 +150,15 @@ public class TeamService {
 
         repo.save(team);
 
-//        CompletableFuture.supplyAsync(() -> {
-//            sendNotificationToNewTeamEntry(team.getName(), team.getLogo(), player.getName(), player.getEmail(), price);
-//            return true;
-//        });
+        CompletableFuture.supplyAsync(() -> {
+            sendNotificationToNewTeamEntry(team.getName(), team.getLogo(), player.getName(), player.getEmail(), price, team.getCaptainName());
+            return true;
+        });
 
         return true;
     }
 
-    private void sendNotificationToNewTeamEntry(String teamName, String logo, String playerName, String email, Integer price) {
+    private void sendNotificationToNewTeamEntry(String teamName, String logo, String playerName, String email, Integer price, String captainName) {
 
         log.info("Trying to send email to player...");
 
@@ -166,7 +167,7 @@ public class TeamService {
 
             mailMessage.setFrom(customConfig.getEmailSender());
             mailMessage.setTo(email);
-            mailMessage.setText(MessageFormat.format(Constants.NEW_TEAM_MESSAGE, playerName, price, teamName));
+            mailMessage.setText(MessageFormat.format(Constants.NEW_TEAM_MESSAGE, playerName, teamName, price, teamName, captainName));
             mailMessage.setSubject(MessageFormat.format(Constants.NEW_TEAM_SUBJECT, teamName));
 
             javaMailSender.send(mailMessage);
